@@ -11,7 +11,5 @@ jobs:
       with:
         java-version: '11'
     - uses: coursier/cache-action@v4.1
-    - name: install sbt
-      run: curl -Ls https://git.io/sbt > ./sbt && chmod 0755 ./sbt
     - name: test
       run: ./sbt test
