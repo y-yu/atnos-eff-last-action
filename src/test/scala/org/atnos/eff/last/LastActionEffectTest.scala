@@ -12,7 +12,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 
 class LastActionEffectTest extends AnyFlatSpec with Diagrams {
-  "LastActionEffect" should "run the last actions in the normal order" in {
+  "runLast" should "run the last actions in the normal order" in {
     import org.atnos.eff.OptionEffect._
 
     type R = Fx.fx2[Option, LastAction]
@@ -200,9 +200,9 @@ class LastActionEffectTest extends AnyFlatSpec with Diagrams {
       }
       _ <- addLast[R](
         listBuffer.append(3)
-      ) *> addLast[R](
+      ) <* addLast[R](
         listBuffer.append(4)
-      ) *> addLast[R](
+      ) <* addLast[R](
         listBuffer.append(5)
       )
       b <- delay[R, Int] {
@@ -217,6 +217,80 @@ class LastActionEffectTest extends AnyFlatSpec with Diagrams {
     } yield a + b
 
     val actual = Eff.run(runEval(eff).runLast)
+
+    assert(actual === 3)
+    assert(listBuffer.toList === List(1, 2, 3, 4, 5, 6, 7))
+  }
+
+  "runLastDefer" should "execute effects by reverse order" in {
+    import org.atnos.eff.EvalEffect._
+
+    type R = Fx.fx2[Eval, LastAction]
+
+    val listBuffer = new ListBuffer[Int]
+
+    val eff = for {
+      a <- delay[R, Int] {
+        listBuffer.append(1)
+        1
+      }
+      _ <- addLast[R](
+        listBuffer.append(6)
+      )
+      b <- delay[R, Int] {
+        listBuffer.append(2)
+        2
+      }
+      _ <- addLast[R](
+        listBuffer.append(5)
+      )
+      c <- delay[R, Int] {
+        listBuffer.append(3)
+        3
+      }
+      _ <- addLast[R](
+        listBuffer.append(4)
+      )
+    } yield a + b + c
+
+    assert(listBuffer.toList === Nil)
+
+    val actual = Eff.run(runEval(eff).runLastDefer)
+
+    assert(actual === 6)
+    assert(listBuffer.toList === List(1, 2, 3, 4, 5, 6))
+  }
+
+  it should "run by reverse order even if last actions are added by applicative composed" in {
+    import org.atnos.eff.EvalEffect._
+    type R = Fx.fx2[LastAction, Eval]
+
+    val listBuffer = new ListBuffer[Int]
+
+    val eff = for {
+      a <- delay[R, Int] {
+        listBuffer.append(1)
+        1
+      }
+      _ <- addLast[R](
+        listBuffer.append(7)
+      ) <* addLast[R](
+        listBuffer.append(6)
+      ) <* addLast[R](
+        listBuffer.append(5)
+      )
+      b <- delay[R, Int] {
+        listBuffer.append(2)
+        2
+      }
+      _ <- addLast[R](
+        listBuffer.append(4)
+      ) *> addLast[R](
+        listBuffer.append(3)
+      )
+    } yield a + b
+
+    val actual = Eff.run(runEval(eff).runLastDefer)
 
     assert(actual === 3)
     assert(listBuffer.toList === List(1, 2, 3, 4, 5, 6, 7))

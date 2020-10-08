@@ -62,18 +62,68 @@ trait LastActionInterpretation extends LastActionTypes {
                 continuation(()).map(_ => value.value)
             }
 
-          override def onApplicativeEffect[X, T[_]: Traverse](
+          override def onApplicativeEffect[X, T[_] : Traverse](
             xs: T[LastAction[X]],
             continuation: Continuation[U, T[X], Eval[A]]
           ): Eff[U, Eval[A]] = {
 
             continuation
-              .asInstanceOf[Continuation[U, T[Unit], Eval[A]]](xs.map(_ => ()))
+              .apply(xs.map { case SideEffectLastAction(_) => () })
               .map { eval =>
                 xs.foldLeft(Eval.Unit) {
-                  case (x, SideEffectLastAction(value)) =>
-                    value >> x
+                  case (acc, SideEffectLastAction(value)) =>
+                    value >> acc
                 } >> eval
+              }
+          }
+        })
+        .map(_.value)
+
+    def runLastDefer[U](implicit
+      m: Member.Aux[LastAction, R, U]
+    ): Eff[U, A] =
+      Interpret
+        .runInterpreter(eff)(new Interpreter[LastAction, U, A, Eval[A]] {
+          override def onPure(a: A): Eff[U, Eval[A]] = {
+            Eff.pure(Eval.now(a))
+          }
+
+          override def onEffect[X](
+            x: LastAction[X],
+            continuation: Continuation[U, X, Eval[A]]
+          ): Eff[U, Eval[A]] = {
+            x match {
+              case SideEffectLastAction(value) =>
+                continuation(())
+                  .map { eval =>
+                    eval.flatMap(a => value.map(_ => a))
+                  }
+            }
+          }
+
+          override def onLastEffect[X](
+            x: LastAction[X],
+            continuation: Continuation[U, X, Unit]
+          ): Eff[U, Unit] =
+            x match {
+              case SideEffectLastAction(value) =>
+                continuation(()).map(_ => value.value)
+            }
+
+          override def onApplicativeEffect[X, T[_] : Traverse](
+            xs: T[LastAction[X]],
+            continuation: Continuation[U, T[X], Eval[A]]
+          ): Eff[U, Eval[A]] = {
+
+            continuation
+              .apply(xs.map { case SideEffectLastAction(_) => () })
+              .map { eval =>
+                eval.flatMap { a =>
+                  xs.foldRight(Eval.Unit) {
+                    case (SideEffectLastAction(value), acc) =>
+                      value >> acc
+                  }.map(_ => a)
+                }
               }
           }
         })
