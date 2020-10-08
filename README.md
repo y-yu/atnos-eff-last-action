@@ -28,6 +28,6 @@ You can try it out by the following command.
 
 ## Acknowledgments
 
-I would like to thank @halcat0x15a and @xuwei-k for many advices.
+I would like to thank [@halcat0x15a](https://github.com/halcat0x15a) and [@xuwei-k](https://github.com/xuwei-k) for many advices.
 But if there could be any mistakes in this repository, they were nothing to do with that.
 

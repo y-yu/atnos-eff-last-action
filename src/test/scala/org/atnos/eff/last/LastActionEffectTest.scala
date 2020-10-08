@@ -186,4 +186,39 @@ class LastActionEffectTest extends AnyFlatSpec with Diagrams {
     assert(actual === 3)
     assert(listBuffer.toList === List(1, 2, 3))
   }
+
+  it should "run last actions which are applicative composed" in {
+    import org.atnos.eff.EvalEffect._
+    type R = Fx.fx2[LastAction, Eval]
+
+    val listBuffer = new ListBuffer[Int]
+
+    val eff = for {
+      a <- delay[R, Int] {
+        listBuffer.append(1)
+        1
+      }
+      _ <- addLast[R](
+        listBuffer.append(3)
+      ) *> addLast[R](
+        listBuffer.append(4)
+      ) *> addLast[R](
+        listBuffer.append(5)
+      )
+      b <- delay[R, Int] {
+        listBuffer.append(2)
+        2
+      }
+      _ <- addLast[R](
+        listBuffer.append(6)
+      ) *> addLast[R](
+        listBuffer.append(7)
+      )
+    } yield a + b
+
+    val actual = Eff.run(runEval(eff).runLast)
+
+    assert(actual === 3)
+    assert(listBuffer.toList === List(1, 2, 3, 4, 5, 6, 7))
+  }
 }

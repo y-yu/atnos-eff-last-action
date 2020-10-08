@@ -23,7 +23,6 @@ lazy val root = (project in file("."))
       "org.atnos" %% "eff" % "5.12.0",
       "org.scalatest" %% "scalatest" % "3.2.2" % "test",
       "org.atnos" %% "eff-monix" % "5.12.0" % "test"
-      //"io.monix" %% "monix" % "3.2.2" % "test"
     )
   )
   .settings(publishSettings)
@@ -50,23 +49,7 @@ lazy val publishSettings = Seq(
         <connection>scm:git:git@github.com:y-yu/atnos-eff-last-action.git</connection>
         <tag>{tagOrHash.value}</tag>
       </scm>,
-  releaseTagName := tagName.value,
-  releaseProcess := Seq[ReleaseStep](
-    checkSnapshotDependencies,
-    inquireVersions,
-    runClean,
-    runTest,
-    setReleaseVersion,
-    updateReadme,
-    commitReleaseVersion,
-    tagRelease,
-    releaseStepCommandAndRemaining("^ publishSigned"),
-    setNextVersion,
-    updateReadme,
-    commitNextVersion,
-    releaseStepCommand("sonatypeReleaseAll"),
-    pushChanges
-  )
+  releaseTagName := tagName.value
 )
 
 val tagName = Def.setting {
