@@ -13,6 +13,10 @@ But I think the implementation has some issues:
 1. This feature is probably NOT described [original paper](http://okmij.org/ftp/Haskell/extensible/more.pdf)
     - so we cannot find out what is the right behavior of this😇
 2. And this can be done by the original Eff idea without special modification for `Eff` data structure
+3. In atnos-eff, `last` of `Eff` is handled like `try-catch-finally` logic of `MonadError` but
+    - the last logic is not the same of `try-catch-finally` because the last logic should be actually done in the last
+      if some `Eff`s are flatmapped
+    - on the other hand, the error handling should be able to be applied to a specific `Eff` data, and it doesn't need to be done in the final
 
 This repository is a PoC of (2).
 
