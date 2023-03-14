@@ -1,7 +1,7 @@
 import ReleaseTransformations._
 import UpdateReadme.updateReadme
 
-val scala213Version = "2.13.3"
+val scala213Version = "2.13.10"
 val defaultScalacOptions = Seq(
   "-deprecation",
   "-encoding", "UTF-8",
@@ -20,9 +20,9 @@ lazy val root = (project in file("."))
     scalaVersion := scala213Version,
     scalacOptions ++= defaultScalacOptions,
     libraryDependencies ++= Seq(
-      "org.atnos" %% "eff" % "5.13.0",
+      "org.atnos" %% "eff" % "5.23.0",
       "org.scalatest" %% "scalatest" % "3.2.15" % "test",
-      "org.atnos" %% "eff-monix" % "5.13.0" % "test"
+      "org.atnos" %% "eff-monix" % "5.23.0" % "test"
     )
   )
   .settings(publishSettings)
