@@ -21,7 +21,7 @@ lazy val root = (project in file("."))
     scalacOptions ++= defaultScalacOptions,
     libraryDependencies ++= Seq(
       "org.atnos" %% "eff" % "5.23.0",
-      "org.scalatest" %% "scalatest" % "3.2.2" % "test",
+      "org.scalatest" %% "scalatest" % "3.2.15" % "test",
       "org.atnos" %% "eff-monix" % "5.23.0" % "test"
     )
   )
